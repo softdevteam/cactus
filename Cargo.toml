@@ -4,7 +4,9 @@ description = "Immutable cactus stack"
 repository = "https://github.com/softdevteam/cactus/"
 version = "0.1.0"
 authors = ["Laurence Tratt <laurie@tratt.net>"]
-license = "UPL-1.0"
+readme = "README"
+license-file = "LICENSE"
+categories = ["data-structures"]
 
 [lib]
 name = "cactus"
