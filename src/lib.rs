@@ -173,6 +173,26 @@ impl<T> Cactus<T> {
     pub fn vals(&self) -> CactusValsIter<T> {
         CactusValsIter{next: self.node.as_ref()}
     }
+
+    /// Consume this Cactus node and return its data. If the cactus node has no children, its data
+    /// is returned without cloning; if the node has children then the internal data is cloned
+    /// (hence why `T` must implement the `Clone` trait).
+    ///
+    /// # Examples
+    /// ```
+    /// use cactus::Cactus;
+    /// let c = Cactus::new().child(1).child(2);
+    /// let p = c.parent().unwrap();
+    /// assert_eq!(c.take_or_clone_val(), Some(2));
+    /// // At this point c has been consumed and can no longer be referenced.
+    /// assert_eq!(p.val(), Some(&1));
+    /// ```
+    pub fn take_or_clone_val(self) -> Option<T> where T: Clone {
+        self.node.map(|x| match Rc::try_unwrap(x) {
+            Ok(n) => n.val,
+            Err(c) => c.val.clone()
+        })
+    }
 }
 
 /// An iterator over a `Cactus` stack's nodes. Note that the iterator produces nodes starting
@@ -292,5 +312,15 @@ mod tests {
     fn test_debug() {
         let c = Cactus::new().child(3).child(2).child(1);
         assert_eq!(format!("{:?}", c), "Cactus[1, 2, 3]");
+    }
+
+    #[test]
+    fn test_take_or_clone_val() {
+        let c = Cactus::new().child(4).child(3);
+        let c1 = c.child(2);
+        let c2 = c.child(1);
+        assert_eq!(c2.take_or_clone_val(), Some(1));
+        assert_eq!(c.take_or_clone_val(), Some(3));
+        assert_eq!(c1.take_or_clone_val(), Some(2));
     }
 }

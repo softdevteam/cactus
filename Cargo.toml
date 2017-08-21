@@ -2,7 +2,7 @@
 name = "cactus"
 description = "Immutable cactus stack"
 repository = "https://github.com/softdevteam/cactus/"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Laurence Tratt <laurie@tratt.net>"]
 readme = "README.md"
 license-file = "LICENSE"
