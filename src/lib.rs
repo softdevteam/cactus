@@ -74,7 +74,8 @@ pub struct Cactus<T> {
 #[derive(Clone)]
 struct Node<T> {
     val: T,
-    parent: Option<Rc<Node<T>>>
+    parent: Option<Rc<Node<T>>>,
+    len: usize
 }
 
 impl<T> Cactus<T> {
@@ -99,7 +100,7 @@ impl<T> Cactus<T> {
 
     /// How many items are there in this cactus stack?
     pub fn len(&self) -> usize {
-        self.vals().count()
+        self.node.as_ref().map_or(0, |x| x.len)
     }
 
     /// Create a new cactus stack node containing value `val` and pointing to parent `self`.
@@ -114,7 +115,10 @@ impl<T> Cactus<T> {
     /// ```
     pub fn child(&self, val: T) -> Cactus<T> {
         Cactus {
-            node: Some(Rc::new(Node{val, parent: self.node.clone()}))
+            node: Some(Rc::new(Node{val,
+                                    parent: self.node.clone(),
+                                    len: self.node.as_ref().map_or(1, |x| x.len + 1)
+                                   }))
         }
     }
 
