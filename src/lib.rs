@@ -62,6 +62,7 @@
 //! ```
 
 use std::fmt;
+use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 
 /// An immutable cactus stack node. May be empty or contain a value; may have a pointer to a parent
@@ -246,6 +247,14 @@ impl<T: PartialEq> PartialEq for Cactus<T> {
 
 impl<T: Eq> Eq for Cactus<T> {}
 
+impl<T: Hash> Hash for Cactus<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        for v in self.vals() {
+            v.hash(state);
+        }
+    }
+}
+
 impl<T: fmt::Debug> fmt::Debug for Cactus<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(f, "Cactus["));
@@ -261,6 +270,8 @@ impl<T: fmt::Debug> fmt::Debug for Cactus<T> {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
+    use std::collections::hash_map::DefaultHasher;
     use super::*;
 
     #[test]
@@ -326,5 +337,31 @@ mod tests {
         assert_eq!(c2.take_or_clone_val(), Some(1));
         assert_eq!(c.take_or_clone_val(), Some(3));
         assert_eq!(c1.take_or_clone_val(), Some(2));
+    }
+
+    #[test]
+    fn test_hash() {
+        fn calculate_hash<T: Hash>(t: &T) -> u64 {
+            let mut s = DefaultHasher::new();
+            t.hash(&mut s);
+            s.finish()
+        }
+
+        let c1 = Cactus::new().child(4).child(3);
+        let c2 = Cactus::new().child(4).child(3);
+        assert_eq!(calculate_hash(&c1), calculate_hash(&c2));
+        // The next test is fragile in theory although probably not in practise. Since there's no
+        // guarantee that two distinct things will map to distinct hashes, it's perfectly possible
+        // that a hasher returns the same value for two distinct cactuses. But this isn't hugely
+        // likely to happen and, if it does, it'll be easy to work out what happened.
+        let c3 = Cactus::new().child(3).child(4);
+        assert_ne!(calculate_hash(&c1), calculate_hash(&c3));
+
+        let mut s = HashSet::new();
+        s.insert(c1.clone());
+        s.insert(c2.clone());
+        assert_eq!(s.len(), 1);
+        assert_eq!(*s.iter().nth(0).unwrap(), c1);
+        assert_eq!(*s.iter().nth(0).unwrap(), c2);
     }
 }
