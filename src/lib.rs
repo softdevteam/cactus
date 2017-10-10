@@ -179,24 +179,40 @@ impl<T> Cactus<T> {
         CactusValsIter{next: self.node.as_ref()}
     }
 
-    /// Consume this Cactus node and return its data. If the cactus node has no children, its data
-    /// is returned without cloning; if the node has children then the internal data is cloned
-    /// (hence why `T` must implement the `Clone` trait).
+    /// Try to consume this Cactus node and return its data. If the cactus node has no children,
+    /// this succeeds; if the cactus node has children, it fails, and returns the original
+    /// cactus node.
     ///
     /// # Examples
     /// ```
     /// use cactus::Cactus;
     /// let c = Cactus::new().child(1).child(2);
     /// let p = c.parent().unwrap();
-    /// assert_eq!(c.take_or_clone_val(), Some(2));
-    /// // At this point c has been consumed and can no longer be referenced.
+    /// assert_eq!(c.try_unwrap().unwrap(), 2);
+    /// // At this point the c variable can no longer be referenced (its value has moved).
     /// assert_eq!(p.val(), Some(&1));
+    ///
+    /// let d = Cactus::new().child(1);
+    /// let d1 = d.child(2);
+    /// let d2 = d.child(3);
+    /// // At this point d.try_unwrap().unwrap() would return an Err, as d has two children that
+    /// // prevent the underlying Cactus from being consumed. We then need to manually clone the
+    /// // value if we want to access it uniformly.
+    /// assert_eq!(d.try_unwrap().unwrap_or_else(|c| c.val().unwrap().clone()), 1);
+    /// // At this point the d variable can no loner be referenced (its value has moved),
+    /// // but we can still access the contents it once pointed to:
+    /// assert_eq!(*d1.parent().unwrap().val().unwrap(), 1);
     /// ```
-    pub fn take_or_clone_val(self) -> Option<T> where T: Clone {
-        self.node.map(|x| match Rc::try_unwrap(x) {
-            Ok(n) => n.val,
-            Err(c) => c.val.clone()
-        })
+    pub fn try_unwrap(self) -> Result<T, Cactus<T>> {
+        match self.node {
+            None => Err(Cactus{node: None}),
+            Some(x) =>  {
+                match Rc::try_unwrap(x) {
+                    Ok(n) => Ok(n.val),
+                    Err(rc) => Err(Cactus{node: Some(rc)})
+                }
+            }
+        }
     }
 }
 
@@ -330,13 +346,13 @@ mod tests {
     }
 
     #[test]
-    fn test_take_or_clone_val() {
+    fn test_try_unwrap() {
         let c = Cactus::new().child(4).child(3);
         let c1 = c.child(2);
         let c2 = c.child(1);
-        assert_eq!(c2.take_or_clone_val(), Some(1));
-        assert_eq!(c.take_or_clone_val(), Some(3));
-        assert_eq!(c1.take_or_clone_val(), Some(2));
+        assert_eq!(c2.try_unwrap(), Ok(1));
+        assert_eq!(c.try_unwrap().unwrap_or_else(|c| c.val().unwrap().clone()), 3);
+        assert_eq!(c1.try_unwrap(), Ok(2));
     }
 
     #[test]
