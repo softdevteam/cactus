@@ -255,9 +255,27 @@ impl<T: PartialEq> PartialEq for Cactus<T> {
         if self.len() != other.len() {
             return false;
         }
-        self.vals()
-            .zip(other.vals())
-            .all(|(x, y)| x == y)
+
+        // This is, in a sense, a manually expanded self.vals().zip(other.vals()) -- doing so
+        // allows us to potentially shortcut the checking of every element using Rc::ptr_eq.
+        let mut si = self.node.as_ref();
+        let mut oi = other.node.as_ref();
+        while si.is_some() {
+            let sn = si.unwrap();
+            let on = oi.unwrap();
+            // If we're lucky, the two Rc's are pointer equal, proving that the two cactuses are
+            // equal even without ascending the parent hierarchy.
+            if Rc::ptr_eq(sn, on) {
+                return true;
+            }
+            if sn.val != on.val {
+                return false;
+            }
+            si.take().map(|n| si = n.parent.as_ref());
+            oi.take().map(|n| oi = n.parent.as_ref());
+        }
+        debug_assert!(oi.is_none());
+        true
     }
 }
 
@@ -331,6 +349,10 @@ mod tests {
     #[test]
     fn test_eq() {
         let c1 = Cactus::new().child(1).child(2);
+        assert_eq!(c1, c1);
+        let c1_1 = c1.child(4);
+        let c1_2 = c1.child(4);
+        assert_eq!(c1_1, c1_2);
         let c2 = Cactus::new().child(1).child(2);
         assert_eq!(c1, c2);
         assert!(!(c1 != c2));
