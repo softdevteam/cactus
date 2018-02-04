@@ -75,8 +75,7 @@ pub struct Cactus<T> {
 #[derive(Clone)]
 struct Node<T> {
     val: T,
-    parent: Option<Rc<Node<T>>>,
-    len: usize
+    parent: Option<Rc<Node<T>>>
 }
 
 impl<T> Cactus<T> {
@@ -101,7 +100,7 @@ impl<T> Cactus<T> {
 
     /// How many items are there in this cactus stack?
     pub fn len(&self) -> usize {
-        self.node.as_ref().map_or(0, |x| x.len)
+        self.vals().count()
     }
 
     /// Create a new cactus stack node containing value `val` and pointing to parent `self`.
@@ -117,8 +116,7 @@ impl<T> Cactus<T> {
     pub fn child(&self, val: T) -> Cactus<T> {
         Cactus {
             node: Some(Rc::new(Node{val,
-                                    parent: self.node.clone(),
-                                    len: self.node.as_ref().map_or(1, |x| x.len + 1)
+                                    parent: self.node.clone()
                                    }))
         }
     }
@@ -252,15 +250,11 @@ impl<'a, T> Iterator for CactusValsIter<'a, T> {
 
 impl<T: PartialEq> PartialEq for Cactus<T> {
     fn eq(&self, other: &Cactus<T>) -> bool {
-        if self.len() != other.len() {
-            return false;
-        }
-
         // This is, in a sense, a manually expanded self.vals().zip(other.vals()) -- doing so
         // allows us to potentially shortcut the checking of every element using Rc::ptr_eq.
         let mut si = self.node.as_ref();
         let mut oi = other.node.as_ref();
-        while si.is_some() {
+        while si.is_some() && oi.is_some() {
             let sn = si.unwrap();
             let on = oi.unwrap();
             // If we're lucky, the two Rc's are pointer equal, proving that the two cactuses are
@@ -274,8 +268,13 @@ impl<T: PartialEq> PartialEq for Cactus<T> {
             si.take().map(|n| si = n.parent.as_ref());
             oi.take().map(|n| oi = n.parent.as_ref());
         }
-        debug_assert!(oi.is_none());
-        true
+        if si.is_some() || oi.is_some() {
+            // One of the iterators finished before the other, meaning that the two cactuses were
+            // of different length and thus unequal by definition
+            false
+        } else {
+            true
+        }
     }
 }
 
