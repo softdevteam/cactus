@@ -7,9 +7,10 @@
 // at your option. This file may not be copied, modified, or distributed except according to those
 // terms.
 
-//! An immutable cactus stuck (also called a spaghetti stack or parent pointer tree). A cactus
-//! stack is a (possibly empty) node with a (possibly null) pointer to a parent node. Any given
-//! node has a unique path back to the root node. Rather than mutably updating the stack, one
+//! An immutable parent pointer tree -- also called a cactus stack.
+//!
+//! A cactus stack is a (possibly empty) node with a (possibly null) pointer to a parent node. Any
+//! given node has a unique path back to the root node. Rather than mutably updating the stack, one
 //! creates and obtains access to immutable nodes (when a node becomes unreachable its memory is
 //! automatically reclaimed). A new child node pointing to a parent can be created via the `child`
 //! function (analogous to the normal `push`) and a parent can be retrieved via the `parent`
@@ -242,16 +243,16 @@ impl<T: PartialEq> PartialEq for Cactus<T> {
             if sn.val != on.val {
                 return false;
             }
-            si.take().map(|n| si = n.parent.as_ref());
-            oi.take().map(|n| oi = n.parent.as_ref());
+            if let Some(n) = si.take() {
+                si = n.parent.as_ref();
+            }
+            if let Some(n) = oi.take() {
+                oi = n.parent.as_ref();
+            }
         }
-        if si.is_some() || oi.is_some() {
-            // One of the iterators finished before the other, meaning that the two cactuses were
-            // of different length and thus unequal by definition
-            false
-        } else {
-            true
-        }
+        // If one of the iterators finished before the other, the two cactuses were of different
+        // length and thus unequal by definition; otherwise they were equal.
+        !(si.is_some() || oi.is_some())
     }
 }
 
@@ -267,12 +268,12 @@ impl<T: Hash> Hash for Cactus<T> {
 
 impl<T: fmt::Debug> fmt::Debug for Cactus<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "Cactus["));
+        write!(f, "Cactus[")?;
         for (i, x) in self.vals().enumerate() {
             if i > 0 {
-                try!(write!(f, ", "));
+                write!(f, ", ")?;
             }
-            try!(write!(f, "{:?}", x));
+            write!(f, "{:?}", x)?;
         }
         write!(f, "]")
     }
