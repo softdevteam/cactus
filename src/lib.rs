@@ -243,16 +243,16 @@ impl<T: PartialEq> PartialEq for Cactus<T> {
             if sn.val != on.val {
                 return false;
             }
-            si.take().map(|n| si = n.parent.as_ref());
-            oi.take().map(|n| oi = n.parent.as_ref());
+            if let Some(n) = si.take() {
+                si = n.parent.as_ref();
+            }
+            if let Some(n) = oi.take() {
+                oi = n.parent.as_ref();
+            }
         }
-        if si.is_some() || oi.is_some() {
-            // One of the iterators finished before the other, meaning that the two cactuses were
-            // of different length and thus unequal by definition
-            false
-        } else {
-            true
-        }
+        // If one of the iterators finished before the other, the two cactuses were of different
+        // length and thus unequal by definition; otherwise they were equal.
+        !(si.is_some() || oi.is_some())
     }
 }
 
