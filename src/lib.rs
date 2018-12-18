@@ -267,12 +267,12 @@ impl<T: Hash> Hash for Cactus<T> {
 
 impl<T: fmt::Debug> fmt::Debug for Cactus<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "Cactus["));
+        write!(f, "Cactus[")?;
         for (i, x) in self.vals().enumerate() {
             if i > 0 {
-                try!(write!(f, ", "));
+                write!(f, ", ")?;
             }
-            try!(write!(f, "{:?}", x));
+            write!(f, "{:?}", x)?;
         }
         write!(f, "]")
     }
