@@ -7,9 +7,10 @@
 // at your option. This file may not be copied, modified, or distributed except according to those
 // terms.
 
-//! An immutable cactus stuck (also called a spaghetti stack or parent pointer tree). A cactus
-//! stack is a (possibly empty) node with a (possibly null) pointer to a parent node. Any given
-//! node has a unique path back to the root node. Rather than mutably updating the stack, one
+//! An immutable parent pointer tree -- also called a cactus stack.
+//!
+//! A cactus stack is a (possibly empty) node with a (possibly null) pointer to a parent node. Any
+//! given node has a unique path back to the root node. Rather than mutably updating the stack, one
 //! creates and obtains access to immutable nodes (when a node becomes unreachable its memory is
 //! automatically reclaimed). A new child node pointing to a parent can be created via the `child`
 //! function (analogous to the normal `push`) and a parent can be retrieved via the `parent`

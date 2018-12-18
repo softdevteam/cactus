@@ -1,6 +1,6 @@
 [package]
 name = "cactus"
-description = "Immutable cactus stack"
+description = "Immutable parent pointer tree"
 repository = "https://github.com/softdevteam/cactus/"
 version = "1.0.3"
 authors = ["Laurence Tratt <laurie@tratt.net>"]
