@@ -2,7 +2,7 @@
 name = "cactus"
 description = "Immutable parent pointer tree"
 repository = "https://github.com/softdevteam/cactus/"
-version = "1.0.3"
+version = "1.0.4"
 authors = ["Laurence Tratt <laurie@tratt.net>"]
 readme = "README.md"
 # This should be "Apache-2.0 OR MIT OR UPL-1.0" but crates.io doesn't know about
