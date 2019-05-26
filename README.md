@@ -1,6 +1,6 @@
 # Cactus
 
-This library provides an immutable cactus stuck (also called a spaghetti stack
+This library provides an immutable cactus stack (also called a spaghetti stack
 or parent pointer tree). A cactus stack is a (possibly empty) node with a
 (possibly null) pointer to a parent node. Any given node has a unique path back
 to the root node. Rather than mutably updating the stack, one creates and
