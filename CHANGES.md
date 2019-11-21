@@ -1,3 +1,9 @@
+# cactus 1.0.5 (2019-11-21)
+
+* License as dual Apache-2.0/MIT (instead of a more complex, and little
+  understood, triple license of Apache-2.0/MIT/UPL-1.0).
+
+
 # cactus 1.0.4 (2018-12-18)
 
 * Ported to Rust 2018.
