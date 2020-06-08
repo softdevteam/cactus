@@ -32,7 +32,13 @@
 
 use std::fmt;
 use std::hash::{Hash, Hasher};
+#[cfg(not(feature = "arc"))]
 use std::rc::Rc;
+#[cfg(feature = "arc")]
+use std::sync::Arc;
+
+#[cfg(feature = "arc")]
+type Rc<T> = Arc<T>;
 
 /// An immutable cactus stack node. May be empty or contain a value; may have a pointer to a parent
 /// or not.

@@ -11,3 +11,6 @@ edition = "2018"
 
 [lib]
 name = "cactus"
+
+[features]
+arc = []
