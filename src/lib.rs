@@ -38,19 +38,19 @@ use std::rc::Rc;
 /// or not.
 #[derive(Clone, Default)]
 pub struct Cactus<T> {
-    node: Option<Rc<Node<T>>>
+    node: Option<Rc<Node<T>>>,
 }
 
 #[derive(Clone)]
 struct Node<T> {
     val: T,
-    parent: Option<Rc<Node<T>>>
+    parent: Option<Rc<Node<T>>>,
 }
 
 impl<T> Cactus<T> {
     /// Return an empty cactus stack node.
     pub fn new() -> Cactus<T> {
-        Cactus{node: None}
+        Cactus { node: None }
     }
 
     /// Is this cactus stack node empty?
@@ -84,9 +84,10 @@ impl<T> Cactus<T> {
     /// ```
     pub fn child(&self, val: T) -> Cactus<T> {
         Cactus {
-            node: Some(Rc::new(Node{val,
-                                    parent: self.node.clone()
-                                   }))
+            node: Some(Rc::new(Node {
+                val,
+                parent: self.node.clone(),
+            })),
         }
     }
 
@@ -102,8 +103,9 @@ impl<T> Cactus<T> {
     /// assert_eq!(c2.parent().unwrap(), Cactus::new());
     /// ```
     pub fn parent(&self) -> Option<Cactus<T>> {
-        self.node.as_ref()
-                 .map(|n| Cactus{node: n.parent.clone()} )
+        self.node.as_ref().map(|n| Cactus {
+            node: n.parent.clone(),
+        })
     }
 
     /// Return a reference to this cactus stack node's value or `None` if this cactus stack is
@@ -130,7 +132,9 @@ impl<T> Cactus<T> {
     /// assert_eq!(c.nodes().skip(1).next(), Some(Cactus::new().child(1).child(2)));
     /// ```
     pub fn nodes(&self) -> CactusNodesIter<T> {
-        CactusNodesIter{next: self.node.as_ref()}
+        CactusNodesIter {
+            next: self.node.as_ref(),
+        }
     }
 
     /// Return an iterator over this cactus stack's values. Note that the iterator produces values
@@ -143,7 +147,9 @@ impl<T> Cactus<T> {
     /// assert_eq!(c.vals().cloned().collect::<Vec<_>>(), [3, 2, 1]);
     /// ```
     pub fn vals(&self) -> CactusValsIter<T> {
-        CactusValsIter{next: self.node.as_ref()}
+        CactusValsIter {
+            next: self.node.as_ref(),
+        }
     }
 
     /// Try to consume this Cactus node and return its data. If the cactus node has no children,
@@ -172,21 +178,22 @@ impl<T> Cactus<T> {
     /// ```
     pub fn try_unwrap(self) -> Result<T, Cactus<T>> {
         match self.node {
-            None => Err(Cactus{node: None}),
-            Some(x) =>  {
-                match Rc::try_unwrap(x) {
-                    Ok(n) => Ok(n.val),
-                    Err(rc) => Err(Cactus{node: Some(rc)})
-                }
-            }
+            None => Err(Cactus { node: None }),
+            Some(x) => match Rc::try_unwrap(x) {
+                Ok(n) => Ok(n.val),
+                Err(rc) => Err(Cactus { node: Some(rc) }),
+            },
         }
     }
 }
 
 /// An iterator over a `Cactus` stack's nodes. Note that the iterator produces nodes starting
 /// from this node and then walking up towards the root.
-pub struct CactusNodesIter<'a, T> where T: 'a {
-    next: Option<&'a Rc<Node<T>>>
+pub struct CactusNodesIter<'a, T>
+where
+    T: 'a,
+{
+    next: Option<&'a Rc<Node<T>>>,
 }
 
 impl<'a, T> Iterator for CactusNodesIter<'a, T> {
@@ -195,15 +202,20 @@ impl<'a, T> Iterator for CactusNodesIter<'a, T> {
     fn next(&mut self) -> Option<Self::Item> {
         self.next.take().map(|n| {
             self.next = n.parent.as_ref();
-            Cactus{node: Some(n.clone())}
+            Cactus {
+                node: Some(n.clone()),
+            }
         })
     }
 }
 
 /// An iterator over a `Cactus` stack's values. Note that the iterator produces values starting
 /// from this node and then walking up towards the root.
-pub struct CactusValsIter<'a, T> where T: 'a {
-    next: Option<&'a Rc<Node<T>>>
+pub struct CactusValsIter<'a, T>
+where
+    T: 'a,
+{
+    next: Option<&'a Rc<Node<T>>>,
 }
 
 impl<'a, T> Iterator for CactusValsIter<'a, T> {
@@ -272,9 +284,9 @@ impl<T: fmt::Debug> fmt::Debug for Cactus<T> {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
-    use std::collections::hash_map::DefaultHasher;
     use super::*;
+    use std::collections::hash_map::DefaultHasher;
+    use std::collections::HashSet;
 
     #[test]
     fn test_simple() {
@@ -310,7 +322,10 @@ mod tests {
     #[test]
     fn test_vals_nodes() {
         let c = Cactus::new().child(3).child(2).child(1);
-        assert_eq!(c.nodes().skip(1).next().unwrap(), Cactus::new().child(3).child(2));
+        assert_eq!(
+            c.nodes().skip(1).next().unwrap(),
+            Cactus::new().child(3).child(2)
+        );
         assert_eq!(c.nodes().skip(2).next().unwrap(), Cactus::new().child(3));
     }
 
@@ -341,7 +356,10 @@ mod tests {
         let c1 = c.child(2);
         let c2 = c.child(1);
         assert_eq!(c2.try_unwrap(), Ok(1));
-        assert_eq!(c.try_unwrap().unwrap_or_else(|c| c.val().unwrap().clone()), 3);
+        assert_eq!(
+            c.try_unwrap().unwrap_or_else(|c| c.val().unwrap().clone()),
+            3
+        );
         assert_eq!(c1.try_unwrap(), Ok(2));
     }
 
