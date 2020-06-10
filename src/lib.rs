@@ -30,6 +30,6 @@
 //! assert_eq!(c3.vals().cloned().collect::<Vec<_>>(), [3, 1]);
 //! ```
 
-mod raw_cactus;
+mod rc_cactus;
 
-pub use raw_cactus::Cactus;
+pub use rc_cactus::Cactus;

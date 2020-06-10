@@ -1,6 +1,5 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
-use std::rc::Rc;
 
 /// An immutable cactus stack node. May be empty or contain a value; may have a pointer to a parent
 /// or not.
