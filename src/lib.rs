@@ -29,7 +29,21 @@
 //! assert_eq!(c2.vals().cloned().collect::<Vec<_>>(), [2, 1]);
 //! assert_eq!(c3.vals().cloned().collect::<Vec<_>>(), [3, 1]);
 //! ```
+//!
+//! There are two flavours of cactus:
+//!
+//! * The standard [`Cactus`](struct.Cactus.html) uses
+//! [`Rc`](https://doc.rust-lang.org/std/rc/struct.Rc.html) internally which makes it well suited
+//! to single-threaded programs but unsuited to multi-threaded programs.
+//!
+//! * The alternative [`ArcCactus`](struct.ArcCactus.html) uses
+//! [`Arc`](https://doc.rust-lang.org/std/sync/struct.Arc.html) internally which makes it suitable
+//! for multi-threaded programs but potentially slower on single-threaded programs.
+//!
+//! Both flavours can be used within a single program.
 
+mod arc_cactus;
 mod rc_cactus;
 
+pub use arc_cactus::Cactus as ArcCactus;
 pub use rc_cactus::Cactus;
