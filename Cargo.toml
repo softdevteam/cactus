@@ -2,7 +2,7 @@
 name = "cactus"
 description = "Immutable parent pointer tree"
 repository = "https://github.com/softdevteam/cactus/"
-version = "1.0.5"
+version = "1.0.6"
 authors = ["Laurence Tratt <laurie@tratt.net>"]
 readme = "README.md"
 license = "Apache-2.0/MIT"

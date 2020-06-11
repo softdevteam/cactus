@@ -1,3 +1,9 @@
+# cactus 1.0.6 (2020-06-11)
+
+* Added `cactus::ArcCactus` variant which internally uses an `Arc` instead of
+  an `Rc`, allowing `ArcCactus`es to be shared across threads.
+
+
 # cactus 1.0.5 (2019-11-21)
 
 * License as dual Apache-2.0/MIT (instead of a more complex, and little
