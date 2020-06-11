@@ -5,13 +5,13 @@ use std::hash::{Hash, Hasher};
 /// or not.
 #[derive(Clone, Default)]
 pub struct Cactus<T> {
-    node: Option<Rc<Node<T>>>,
+    node: Option<RefCnt<Node<T>>>,
 }
 
 #[derive(Clone)]
 struct Node<T> {
     val: T,
-    parent: Option<Rc<Node<T>>>,
+    parent: Option<RefCnt<Node<T>>>,
 }
 
 impl<T> Cactus<T> {
@@ -51,7 +51,7 @@ impl<T> Cactus<T> {
     /// ```
     pub fn child(&self, val: T) -> Cactus<T> {
         Cactus {
-            node: Some(Rc::new(Node {
+            node: Some(RefCnt::new(Node {
                 val,
                 parent: self.node.clone(),
             })),
@@ -146,7 +146,7 @@ impl<T> Cactus<T> {
     pub fn try_unwrap(self) -> Result<T, Cactus<T>> {
         match self.node {
             None => Err(Cactus { node: None }),
-            Some(x) => match Rc::try_unwrap(x) {
+            Some(x) => match RefCnt::try_unwrap(x) {
                 Ok(n) => Ok(n.val),
                 Err(rc) => Err(Cactus { node: Some(rc) }),
             },
@@ -160,7 +160,7 @@ pub struct CactusNodesIter<'a, T>
 where
     T: 'a,
 {
-    next: Option<&'a Rc<Node<T>>>,
+    next: Option<&'a RefCnt<Node<T>>>,
 }
 
 impl<'a, T> Iterator for CactusNodesIter<'a, T> {
@@ -182,7 +182,7 @@ pub struct CactusValsIter<'a, T>
 where
     T: 'a,
 {
-    next: Option<&'a Rc<Node<T>>>,
+    next: Option<&'a RefCnt<Node<T>>>,
 }
 
 impl<'a, T> Iterator for CactusValsIter<'a, T> {
@@ -199,15 +199,15 @@ impl<'a, T> Iterator for CactusValsIter<'a, T> {
 impl<T: PartialEq> PartialEq for Cactus<T> {
     fn eq(&self, other: &Cactus<T>) -> bool {
         // This is, in a sense, a manually expanded self.vals().zip(other.vals()) -- doing so
-        // allows us to potentially shortcut the checking of every element using Rc::ptr_eq.
+        // allows us to potentially shortcut the checking of every element using RefCnt::ptr_eq.
         let mut si = self.node.as_ref();
         let mut oi = other.node.as_ref();
         while si.is_some() && oi.is_some() {
             let sn = si.unwrap();
             let on = oi.unwrap();
-            // If we're lucky, the two Rc's are pointer equal, proving that the two cactuses are
+            // If we're lucky, the two RefCnt's are pointer equal, proving that the two cactuses are
             // equal even without ascending the parent hierarchy.
-            if Rc::ptr_eq(sn, on) {
+            if RefCnt::ptr_eq(sn, on) {
                 return true;
             }
             if sn.val != on.val {

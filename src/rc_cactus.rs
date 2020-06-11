@@ -1,3 +1,3 @@
-use std::rc::Rc;
+use std::rc::Rc as RefCnt;
 
 include!("raw_cactus.rs");
