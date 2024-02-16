@@ -202,9 +202,7 @@ impl<T: PartialEq> PartialEq for Cactus<T> {
         // allows us to potentially shortcut the checking of every element using RefCnt::ptr_eq.
         let mut si = self.node.as_ref();
         let mut oi = other.node.as_ref();
-        while si.is_some() && oi.is_some() {
-            let sn = si.unwrap();
-            let on = oi.unwrap();
+        while let (Some(sn), Some(on)) = (si, oi) {
             // If we're lucky, the two RefCnt's are pointer equal, proving that the two cactuses are
             // equal even without ascending the parent hierarchy.
             if RefCnt::ptr_eq(sn, on) {
@@ -213,12 +211,8 @@ impl<T: PartialEq> PartialEq for Cactus<T> {
             if sn.val != on.val {
                 return false;
             }
-            if let Some(n) = si.take() {
-                si = n.parent.as_ref();
-            }
-            if let Some(n) = oi.take() {
-                oi = n.parent.as_ref();
-            }
+            si = sn.parent.as_ref();
+            oi = on.parent.as_ref();
         }
         // If one of the iterators finished before the other, the two cactuses were of different
         // length and thus unequal by definition; otherwise they were equal.
@@ -298,6 +292,9 @@ mod tests {
 
     #[test]
     fn test_eq() {
+        let c1 = Cactus::<u8>::new();
+        let c2 = Cactus::<u8>::new();
+        assert_eq!(c1, c2);
         let c1 = Cactus::new().child(1).child(2);
         assert_eq!(c1, c1);
         let c1_1 = c1.child(4);
@@ -309,6 +306,9 @@ mod tests {
         let c3 = Cactus::new().child(2).child(2);
         assert_ne!(c1, c3);
         assert!(!(c1 == c3));
+        let c1 = Cactus::new().child(1).child(1);
+        let c2 = Cactus::new().child(1);
+        assert_ne!(c1, c2);
     }
 
     #[test]
