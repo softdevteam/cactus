@@ -1,3 +1,8 @@
+# cactus 1.0.7 (2024-02-16)
+
+* Simplify the implementation of `PartialEq::eq`.
+
+
 # cactus 1.0.6 (2020-06-11)
 
 * Added `cactus::ArcCactus` variant which internally uses an `Arc` instead of
